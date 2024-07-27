@@ -9,6 +9,15 @@ from datetime import timedelta
 class Signup(Resource):
     def post(self):
         data = request.get_json()
+        
+        # Check if username already exists
+        if User.query.filter_by(username=data['username']).first():
+            return {'error': 'Username already taken'}, 400
+        
+        # Check if email already exists
+        if User.query.filter_by(email=data['email']).first():
+            return {'error': 'Email already registered'}, 400
+        
         user = User(
             username=data['username'],
             email=data['email']
@@ -38,8 +47,13 @@ class Login(Resource):
                 identity=user.id,
                 expires_delta=timedelta(days=4)
             )
+            refresh_token = create_access_token(
+                identity=user.id,
+                expires_delta=timedelta(days=14)
+            )
             return {
                 'access_token': access_token,
+                'refresh_token': refresh_token,
                 'user_id': user.id,
                 'username': user.username
             }, 200
@@ -98,8 +112,7 @@ class Posts(Resource):
     @jwt_required()
     def post(self):
         data = request.get_json()
-        claims = get_jwt_identity()
-        user_id = claims['id']
+        user_id = get_jwt_identity()  # This directly returns the user ID as an integer
         new_post = Post(
             title=data['title'],
             content=data['content'],
@@ -142,16 +155,15 @@ class PostById(Resource):
 
     @jwt_required()
     def patch(self, id):
-        claims = get_jwt_identity()
-        author_id = claims
+        author_id = get_jwt_identity()  # This directly returns the user ID as an integer
         post = Post.query.get(id)
         if not post:
             return {'error': 'Post not found'}, 404
         if post.author_id != author_id:
             return {'error': 'Unauthorized'}, 403
-    
+
         data = request.get_json()
-    
+
         for attr in ['title', 'content']:
             if attr in data:
                 setattr(post, attr, data[attr])    
@@ -165,8 +177,7 @@ class PostById(Resource):
 
     @jwt_required()
     def delete(self, id):
-        claims = get_jwt_identity()
-        author_id = claims['id']
+        author_id = get_jwt_identity()
         post = Post.query.get(id)
         if not post:
             return {'error': 'Post not found'}, 404
@@ -199,8 +210,7 @@ class Comments(Resource):
 class CommentById(Resource):
     @jwt_required()
     def delete(self, id):
-        claims = get_jwt_identity()
-        user_id = claims['id']
+        user_id = get_jwt_identity()
         comment = Comment.query.get(id)
         if not comment:
             return {'error': 'Comment not found'}, 404
