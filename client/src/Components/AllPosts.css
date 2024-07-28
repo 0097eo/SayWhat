@@ -1,0 +1,30 @@
+.all-posts {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .post-preview {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .post-preview h3 {
+    margin-top: 0;
+  }
+  
+  .post-preview a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .post-preview a:hover {
+    text-decoration: underline;
+  }
+  
+  .post-preview p {
+    margin: 10px 0;
+  }
